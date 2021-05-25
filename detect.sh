@@ -1,6 +1,11 @@
 #!/bin/bash
 
-AUDIO_INPUT_NAME="test"
+INPUT_FILE=$1
+AUDIO_INPUT_NAME="${INPUT_FILE%.*}"
+EXTENSION="${INPUT_FILE##*.}"
+if [ "$EXTENSION" == "mp3" ]; then
+    ffmpeg -i "${AUDIO_INPUT_NAME}.mp3" -ar 16000 -ac 1 "${AUDIO_INPUT_NAME}.wav"
+fi
 MODEL_DIR="new_model"
 
 
