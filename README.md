@@ -22,8 +22,7 @@ cd ..
 ```
 
 ## Detect
-- To detect command from a file (for example: test.wav), run the following command. If you want to change the file to detect or the model to detect, 
-change the variables AUDIO_INPUT_NAME and MODEL_DIR inside detect.sh. The results are saved in test_cuts_1104
+- To detect command from a file (for example: test.wav), run the following command. The results are saved in test_cuts_1104
 ```
-./detect.sh
+./detect.sh test.wav
 ```
