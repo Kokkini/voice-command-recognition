@@ -1,7 +1,7 @@
 #!/bin/bash
 
-AUDIO_INPUT_NAME="ok_lumi_test"
-MODEL_DIR="my_more_data_model"
+AUDIO_INPUT_NAME="test"
+MODEL_DIR="new_model"
 
 
 TEMP_FILE="somethingrandom483bndh3.txt"

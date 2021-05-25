@@ -8,6 +8,7 @@ from pyAudioAnalysis import audioBasicIO as aIO
 from pyAudioAnalysis import audioSegmentation as aS
 from scipy.io import wavfile
 import os
+import shutil
 
 args = argparse.ArgumentParser()
 args.add_argument('-i', help="input dir")
@@ -48,7 +49,7 @@ def annotate(indir):
     for file in os.listdir(indir):
         if not file.endswith(".wav"): continue
         cmd = get_cmd_from_file_name(file)
-        file_path = os.path.join(indir, file)
+        file_path = os.path.join(indir, file[:-4])
         fileids.append(file_path + "\n")
         transcript.append(f"<s> {cmd} </s> ({file_path})\n")
     with open("anno.fileids", "w") as f:
@@ -57,5 +58,7 @@ def annotate(indir):
         f.writelines(transcript)
 
 if __name__ == "__main__":
+    if os.path.exists(args.o):
+        shutil.rmtree(args.o)
     split_dir(args.i, args.o)
     annotate(args.o)
