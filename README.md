@@ -4,7 +4,10 @@
 Follow the instruction in [Huongdan_CMU_Sphinx_LUMI.doc](Huongdan_CMU_Sphinx_LUMI.doc) to install Sphinx
 
 ## Create training data
-- Record a few samples of training data (for example: data/small_recs). Save them using the same naming format as the example
+- Record a few samples of training data (for example: data/small_recs). Save them using the same naming format as the example. If the file is not a wav file with sample rate 16kHz, convert it using this command
+```
+ffmpeg -i OK_LUMI.mp3 -ar 16000 -ac 1 OK_LUMI.wav
+```
 - Format and annotate training data (this cut the training files into files with 1 command each then annotate those files in anno.fileids and anno.transcription)
 ```
 cd data
