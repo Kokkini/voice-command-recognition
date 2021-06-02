@@ -9,12 +9,29 @@ from pyAudioAnalysis import audioSegmentation as aS
 from scipy.io import wavfile
 import os
 import shutil
+from audiomentations import *
+import numpy as np
+import librosa
+from tqdm import tqdm
+import soundfile as sf
+
 
 args = argparse.ArgumentParser()
 args.add_argument('-i', help="input dir")
 args.add_argument('-o', help='output directory')
 # args.add_argument('-prefix', help='prefix of outputfile')
 args = args.parse_args()
+
+augment = Compose([
+    PolarityInversion(p=0.5),
+    LoudnessNormalization(min_lufs_in_db=-31, max_lufs_in_db=-13, p=1.0),
+    AddBackgroundNoise("background_noises", min_snr_in_db=3, max_snr_in_db=50, p=1.0),
+    Gain(min_gain_in_db=-6, max_gain_in_db=12, p=1.0),
+    AddGaussianSNR(max_SNR=0.1, p=1.0),
+    # TimeStretch(min_rate=0.8, max_rate=1.25, p=0.5, leave_length_unchanged=False),
+    # PitchShift(min_semitones=-3, max_semitones=3, p=0.5),
+    # ClippingDistortion(max_percentile_threshold=10, p=0.5), #Distort signal by clipping a random percentage of points
+])
 
 def truncate(data, rate, start, end):
     start = int(start*rate)
@@ -43,6 +60,17 @@ def split_dir(indir, outdir, plot=False):
         if not file.endswith(".wav"): continue
         split(os.path.join(indir, file), outdir, plot)
 
+
+def augment_from_dir(indir, num_replica=10):
+    for file in tqdm(os.listdir(indir)):
+        if not file.endswith(".wav"): continue
+        filename, ext = os.path.splitext(file)
+        samples, rate = librosa.load(os.path.join(indir, file), sr=None)
+        for i in range(num_replica):
+            augmented_samples = augment(samples=samples, sample_rate=rate)
+            # wavfile.write(f"{indir}/{filename}a{i}.wav", rate, augmented_samples)
+            sf.write(f"{indir}/{filename}a{i}.wav", augmented_samples, rate, 'PCM_24')
+
 def annotate(indir):
     fileids = []
     transcript = []
@@ -61,4 +89,5 @@ if __name__ == "__main__":
     if os.path.exists(args.o):
         shutil.rmtree(args.o)
     split_dir(args.i, args.o)
+    augment_from_dir(args.o, num_replica=20)
     annotate(args.o)
