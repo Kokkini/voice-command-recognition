@@ -26,3 +26,15 @@ cd ..
 ```
 ./detect.sh test.wav
 ```
+
+## Detect from microphone
+- To do live detection from the microphone, run the following command. It works best for mic that records at sample rate 16kHz. Different sample rates will result in lower accuracy. 
+```
+./detect_mic.sh
+```
+
+## Change the keywords to detect
+- All possible keywords are listed in hotword.dict. If you don't want to detect some keywords, you can delete them from the file. For example, if you want to detect only OK LUMI, delete everything except the OK_LUMI line.
+```
+./detect.sh test.wav
+```
