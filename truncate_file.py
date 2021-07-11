@@ -32,6 +32,28 @@ def get_segments_from_detection(detection_file):
         except:
             continue
     return segments
+
+def find_all_intersections(index, segments):
+    word, start, end, confidence = segments[index]
+    res = []
+    # find forward
+    for i in range(index+1, len(segments)):
+        word2, start2, end2, confidence2 = segments[i]
+        if start2 < end:
+            res.append(i)
+        else:
+            break 
+    
+    # find backward
+    for i in range(index):
+        word2, start2, end2, confidence2 = segments[i]
+        if end2 > start:
+            res.append(i)
+        else:
+            break
+    return res
+    
+
             
 
 output_dir = args.o #"cuts_tat_den_test"
@@ -52,6 +74,9 @@ segments = sorted(segments, key=lambda x: x[1])
 confidence_boost = {
     "TAWST DDEFN": 0.02
 }
+
+end_words = ["QUAJT", "TIVI", "DDEFN", "BASO THUWSC"]
+
 for seg in segments:
     print(seg)
     seg[-1] += confidence_boost.get(seg[0], 0)
@@ -64,13 +89,37 @@ for seg in segments:
 i = 0
 while i < len(segments):
     word, start, end, confidence = segments[i]
-    if i+1 < len(segments):
+    duration = end - start 
+    word_len = len(word.split())
+    
+    if duration < 0.13 * word_len:
+        i+=1
+        continue
+    end_command = False
+    for end_word in end_words:
+        if word.endswith(end_word):
+            end_command = True
+            break
+    intersections = find_all_intersections(i, segments)
+    if end_command:
+        false_alarm = False
+        for inter in intersections:
+            word2, start2, end2, confidence2 = segments[inter]
+            if end2 > end + 0.1:
+                i+=1
+                false_alarm = True
+                break 
+        if false_alarm:
+            continue
+    intersections = sorted(intersections)
+    for inter in intersections:
+        if inter < i: continue
         word, start, end, confidence = segments[i]
-        word2, start2, end2, confidence2 = segments[i+1]
-        if (end - start2) / (end2 - start) > 0.4:
+        word2, start2, end2, confidence2 = segments[inter]
+        if (end - start2) / (end2 - start) > 0.6:
             if confidence2 > confidence:
-                word, start, end, confidence = segments[i+1]
-            i+=1
+                word, start, end, confidence = segments[inter]
+                i = inter
     
     print(word, start, end, confidence)
     piece = truncate(data, rate, start, end)

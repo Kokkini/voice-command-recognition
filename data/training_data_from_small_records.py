@@ -14,6 +14,7 @@ import numpy as np
 import librosa
 from tqdm import tqdm
 import soundfile as sf
+import pyrubberband
 
 
 args = argparse.ArgumentParser()
@@ -25,9 +26,9 @@ args = args.parse_args()
 augment = Compose([
     PolarityInversion(p=0.5),
     LoudnessNormalization(min_lufs_in_db=-31, max_lufs_in_db=-13, p=1.0),
-    AddBackgroundNoise("background_noises", min_snr_in_db=3, max_snr_in_db=50, p=1.0),
+    # AddBackgroundNoise("background_noises", min_snr_in_db=3, max_snr_in_db=50, p=1.0),
     Gain(min_gain_in_db=-6, max_gain_in_db=12, p=1.0),
-    AddGaussianSNR(max_SNR=0.1, p=1.0),
+    # AddGaussianSNR(max_SNR=0.1, p=1.0),
     # TimeStretch(min_rate=0.8, max_rate=1.25, p=0.5, leave_length_unchanged=False),
     # PitchShift(min_semitones=-3, max_semitones=3, p=0.5),
     # ClippingDistortion(max_percentile_threshold=10, p=0.5), #Distort signal by clipping a random percentage of points
@@ -68,6 +69,8 @@ def augment_from_dir(indir, num_replica=10):
         samples, rate = librosa.load(os.path.join(indir, file), sr=None)
         for i in range(num_replica):
             augmented_samples = augment(samples=samples, sample_rate=rate)
+            augmented_samples = pyrubberband.pitch_shift(augmented_samples, rate, np.random.normal(0,1.5))
+            augmented_samples = pyrubberband.time_stretch(augmented_samples, rate, np.random.uniform(0.8, 1.25))
             # wavfile.write(f"{indir}/{filename}a{i}.wav", rate, augmented_samples)
             sf.write(f"{indir}/{filename}a{i}.wav", augmented_samples, rate, 'PCM_24')
 
@@ -89,5 +92,5 @@ if __name__ == "__main__":
     if os.path.exists(args.o):
         shutil.rmtree(args.o)
     split_dir(args.i, args.o)
-    augment_from_dir(args.o, num_replica=20)
+    augment_from_dir(args.o, num_replica=30)
     annotate(args.o)

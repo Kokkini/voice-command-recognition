@@ -9,6 +9,7 @@ import numpy as np
 import librosa
 from tqdm import tqdm
 import soundfile as sf
+import pyrubberband
 
 rate = 16000
 
@@ -37,5 +38,7 @@ for i in tqdm(range(10)):
     augmented_samples = augment(samples=samples, sample_rate=rate)
     # wavfile.write(f"{outdir}/sample_{i}.wav", rate, augmented_samples)
     # librosa.output.write_wav(f"{outdir}/sample_{i}.wav", augmented_samples, rate)
+    augmented_samples = pyrubberband.pitch_shift(augmented_samples, rate, np.random.normal(0,1.5))
+    augmented_samples = pyrubberband.time_stretch(augmented_samples, rate, np.random.uniform(0.8, 1.25))
     sf.write(f"{outdir}/sample_{i}.wav", augmented_samples, rate, 'PCM_24')
     
